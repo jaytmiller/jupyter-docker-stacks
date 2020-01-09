@@ -57,7 +57,7 @@ RUN conda config --add channels http://ssb.stsci.edu/astroconda-tomb
 RUN conda config --add channels conda-forge 
 
 
-RUN conda install --file http://ssb.stsci.edu/releases/hstdp/2019.5/latest-linux
+RUN conda install --file hst-dev/conda_packages.txt
 
 
 # JupyterLab extensions
