@@ -6,7 +6,7 @@ FROM jupyter/scipy-notebook:dd2087c75645
 
 # See https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html
 # for a list of what comes with the base image
-# python version is: 3.7.7
+# python version is: 3.7.6
 
 LABEL maintainer="Science Platforms <cbrasseur@stsci.edu>"
 
@@ -37,7 +37,8 @@ RUN apt-get install -y gcc \
    python-setuptools \
    file \
    libcfitsio-bin \
-   libcfitsio-dev
+   libcfitsio-dev \
+   less
 
 RUN easy_install lxml
 
@@ -46,15 +47,15 @@ RUN apt-get install -y build-essential
 USER $NB_UID
 
 # Add astropy, astroconda, and conda-forge channels
-RUN conda config --add channels astropy
-RUN conda config --add channels http://ssb.stsci.edu/astroconda
-RUN conda config --add channels conda-forge
+RUN conda config -q --add channels astropy
+RUN conda config -q --add channels http://ssb.stsci.edu/astroconda
+RUN conda config -q --add channels conda-forge
 
 # Install conda packages
-RUN conda update -y \
+RUN conda update -q -y \
    conda
 
-RUN conda install -y \
+RUN conda install -q -y \
    numpy \
    astropy \
    mkl-service \
@@ -66,10 +67,10 @@ RUN conda install -y \
    ginga
 
 # Problematic pip install due to pybind11 issues
-RUN conda install -y -c conda-forge \
+RUN conda install -q -y -c conda-forge \
     pybind11 \
     george
-RUN conda install -y -c conda-forge \
+RUN conda install -q -y -c conda-forge \
     celerite
 
 # pip packages
@@ -112,7 +113,16 @@ RUN pip install --no-color  ellc
 
 RUN pip install ipyevents
 RUN jupyter nbextension enable --py --sys-prefix ipyevents
-RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager@^2.0.0 ipyevents
+RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager@^2.0.0 ipyevents --no-build
+
+# From scipy-notebook base image
+RUN jupyter lab build -y && \
+jupyter lab clean -y && \
+npm cache clean --force && \
+rm -rf "/home/${NB_USER}/.cache/yarn" && \
+rm -rf "/home/${NB_USER}/.node-gyp" && \
+fix-permissions "${CONDA_DIR}" && \
+fix-permissions "/home/${NB_USER}"
 
 # ---------------------------------------------------------------
 # VARTOOLS Light Curve Analysis Program
