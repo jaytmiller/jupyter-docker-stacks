@@ -2,11 +2,11 @@
 # Distributed under the terms of the Modified BSD License.
 
 # FROM jupyter/scipy-notebook:a238993ad594
-FROM jupyter/scipy-notebook:dc57157d6316
+FROM jupyter/scipy-notebook:dd2087c75645
 
 # See https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html
 # for a list of what comes with the base image
-# python version is: 3.7.6
+# python version is: 3.7.7
 
 LABEL maintainer="Science Platforms <cbrasseur@stsci.edu>"
 
@@ -46,15 +46,15 @@ RUN apt-get install -y build-essential
 USER $NB_UID
 
 # Add astropy, astroconda, and conda-forge channels
-RUN conda config -q --add channels astropy
-RUN conda config -q --add channels http://ssb.stsci.edu/astroconda
-RUN conda config -q --add channels conda-forge
+RUN conda config --add channels astropy
+RUN conda config --add channels http://ssb.stsci.edu/astroconda
+RUN conda config --add channels conda-forge
 
 # Install conda packages
-RUN conda update -q -y \
+RUN conda update -y \
    conda
 
-RUN conda install -q -y \
+RUN conda install -y \
    numpy \
    astropy \
    mkl-service \
@@ -66,15 +66,14 @@ RUN conda install -q -y \
    ginga
 
 # Problematic pip install due to pybind11 issues
-RUN conda install -q -y -c conda-forge \
+RUN conda install -y -c conda-forge \
     pybind11 \
     george
-RUN conda install -q -y -c conda-forge \
+RUN conda install -y -c conda-forge \
     celerite
 
 # pip packages
 RUN pip install --no-color  --upgrade pip
-RUN pip install --no-color  ipyevents
 RUN pip install --no-color  --pre astroquery --upgrade
 RUN pip install --no-color  exoplanet
 RUN pip install --no-color  astrocut
@@ -110,8 +109,10 @@ RUN pip install --no-color  ellc
 
 # ---------------------------------------------------------------
 # JupyterLab extensions
+
+RUN pip install ipyevents
 RUN jupyter nbextension enable --py --sys-prefix ipyevents
-# RUN jupyter labextension install jupyterlab_bokeh  # ?? broken, but part of base image
+RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager@^2.0.0 ipyevents
 
 # ---------------------------------------------------------------
 # VARTOOLS Light Curve Analysis Program
@@ -128,20 +129,9 @@ RUN curl --silent --show-error https://www.astro.princeton.edu/~jhartman/vartool
 
 
 # ---------------------------------------------------------------
-# Test package imports
-USER root
-COPY test_imports.py /opt
-RUN python3 /opt/test_imports.py  && rm /opt/test_imports.py
-
-# --------------------------------------------------------------
-# Temporary missing packages section
-USER $NB_UID
-RUN pip install --no-color pytest
-
-# ---------------------------------------------------------------
 # conda cleanup
-USER root
-RUN conda clean --all -f -y -q
+
+RUN conda clean --all -f -y
 
 # ---------------------------------------------------------------
 # Git repos
@@ -161,3 +151,11 @@ RUN git clone https://github.com/spacetelescope/notebooks.git /opt/notebooks
 COPY platform_readme.txt /opt/README
 
 COPY VERSION /opt
+
+# ---------------------------------------------------------------
+# Install package tests
+USER root
+COPY testing /opt/testing
+RUN python3 /opt/testing/test_imports.py
+
+USER $NB_UID
