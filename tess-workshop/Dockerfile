@@ -15,9 +15,10 @@ ENV MKL_THREADING_LAYER="GNU"
 
 # Installing all the unix stuff
 USER root
-RUN apt-get update -y
+RUN apt-get update -y --fix-missing
 RUN apt-get install -y --no-install-recommends apt-utils
-RUN apt-get install -y gcc \
+RUN apt-get install -y \
+   gcc \
    g++ \
    gfortran \
    vim \
@@ -38,7 +39,8 @@ RUN apt-get install -y gcc \
    file \
    libcfitsio-bin \
    libcfitsio-dev \
-   less
+   less \
+   fftw3-dev
 
 RUN easy_install lxml
 
@@ -147,15 +149,14 @@ RUN conda clean --all -f -y
 # Git repos
 
 USER root
-RUN mkdir /opt/tessworkshop_tutorials
-RUN chmod 777 /opt/tessworkshop_tutorials
-
-RUN mkdir /opt/notebooks
-RUN chmod 777 /opt/notebooks
+RUN mkdir /opt/tessworkshop_tutorials  && chmod 777 /opt/tessworkshop_tutorials
+RUN mkdir /opt/notebooks               && chmod 777 /opt/notebooks
+RUN mkdir /opt/pilotTessContent        && chmod 777 /opt/pilotTessContent
 
 USER $NB_UID
 RUN git clone https://github.com/spacetelescope/tessworkshop_tutorials.git /opt/tessworkshop_tutorials
 RUN git clone https://github.com/spacetelescope/notebooks.git /opt/notebooks
+RUN git clone https://github.com/mustaric/pilotTessContent  /opt/pilotTessContent
 
 # README
 COPY platform_readme.txt /opt/README
@@ -167,5 +168,12 @@ COPY VERSION /opt
 USER root
 COPY testing /opt/testing
 RUN python3 /opt/testing/test_imports.py
+
+# ---------------------------------------------------------------
+# Temporary missing package additions for image checkout
+RUN conda install -y -q fftw
+RUN conda install -y -q pyfftw
+# RUN pip install --no-color  fftw
+# RUN pip install --no-color  pyfftw
 
 USER $NB_UID
