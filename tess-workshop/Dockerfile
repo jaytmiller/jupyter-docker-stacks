@@ -66,7 +66,9 @@ RUN conda install -q -y \
    boto3 \
    emcee \
    starry \
-   ginga
+   ginga \
+   fftw \
+   pyfftw
 
 # Problematic pip install due to pybind11 issues
 RUN conda install -q -y -c conda-forge \
@@ -168,12 +170,5 @@ COPY VERSION /opt
 USER root
 COPY testing /opt/testing
 RUN python3 /opt/testing/test_imports.py
-
-# ---------------------------------------------------------------
-# Temporary missing package additions for image checkout
-RUN conda install -y -q fftw
-RUN conda install -y -q pyfftw
-# RUN pip install --no-color  fftw
-# RUN pip install --no-color  pyfftw
 
 USER $NB_UID
