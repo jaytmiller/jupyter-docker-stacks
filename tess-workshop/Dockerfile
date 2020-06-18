@@ -40,12 +40,26 @@ RUN apt-get install -y \
    libcfitsio-bin \
    libcfitsio-dev \
    less \
-   fftw3-dev
+   apt-file \
+   fftw3-dev \
+   build-essential
 
 RUN easy_install lxml
 
-# IMPORTANT
-RUN apt-get install -y build-essential
+# ---------------------------------------------------------------
+# VARTOOLS Light Curve Analysis Program
+
+RUN curl --silent --show-error https://www.astro.princeton.edu/~jhartman/vartools/vartools-1.38.tar.gz -o vartools-1.38.tar.gz && \
+   tar zxf vartools-1.38.tar.gz &&\
+   cd vartools-1.38 &&\
+   ./configure &&\
+   make &&\
+   make install &&\
+   cd .. &&\
+   rm -rf vartools-1.38 vartools-1.38.tar.gz
+
+
+# ---------------------------------------------------------------
 USER $NB_UID
 
 # Add astropy, astroconda, and conda-forge channels
@@ -68,7 +82,8 @@ RUN conda install -q -y \
    starry \
    ginga \
    fftw \
-   pyfftw
+   pyfftw \
+   mkl_fft
 
 # Problematic pip install due to pybind11 issues
 RUN conda install -q -y -c conda-forge \
@@ -111,36 +126,14 @@ RUN pip install --no-color  tvguide
 RUN pip install --no-color  astrobase
 RUN pip install --no-color  reproject
 RUN pip install --no-color  ellc
+RUN pip install --no-color  awscli
 
 # ---------------------------------------------------------------
 # JupyterLab extensions
 
 RUN pip install ipyevents
 RUN jupyter nbextension enable --py --sys-prefix ipyevents
-RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager@^2.0.0 ipyevents --no-build
-
-# From scipy-notebook base image
-RUN jupyter lab build -y && \
-jupyter lab clean -y && \
-npm cache clean --force && \
-rm -rf "/home/${NB_USER}/.cache/yarn" && \
-rm -rf "/home/${NB_USER}/.node-gyp" && \
-fix-permissions "${CONDA_DIR}" && \
-fix-permissions "/home/${NB_USER}"
-
-# ---------------------------------------------------------------
-# VARTOOLS Light Curve Analysis Program
-
-USER root
-RUN curl --silent --show-error https://www.astro.princeton.edu/~jhartman/vartools/vartools-1.38.tar.gz -o vartools-1.38.tar.gz && \
-   tar zxf vartools-1.38.tar.gz &&\
-   cd vartools-1.38 &&\
-   ./configure &&\
-   make &&\
-   make install &&\
-   cd .. &&\
-   rm -rf vartools-1.38 vartools-1.38.tar.gz
-
+RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager@^2.0.0 ipyevents
 
 # ---------------------------------------------------------------
 # conda cleanup
