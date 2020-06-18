@@ -42,7 +42,8 @@ RUN apt-get install -y \
    less \
    apt-file \
    fftw3-dev \
-   build-essential
+   build-essential \
+   texlive-latex-recommended
 
 RUN easy_install lxml
 
@@ -161,6 +162,9 @@ COPY VERSION /opt
 # ---------------------------------------------------------------
 # Install package tests
 USER root
+# RUN git clone https://github.com/afeinstein20/eleanor &&  cd eleanor &&  python setup.py install && cd .. && rm -rf eleanor
+# RUN git clone https://github.com/justincely/lightcurve && cd lightcurve && python setup.py install && cd .. && rm -rf lightcurve
+
 COPY testing /opt/testing
 RUN python3 /opt/testing/test_imports.py
 
