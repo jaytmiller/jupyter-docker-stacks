@@ -1,4 +1,4 @@
-#! /bin/bash -eux
+#! /bin/bash -eu
 
 notebook_in=${1}
 notebook_out=${2:-"`echo $1 | sed -e's/.ipynb/_out.ipynb/g'`"}
