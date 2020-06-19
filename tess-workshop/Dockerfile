@@ -173,5 +173,6 @@ COPY testing /opt/testing
 RUN python3 /opt/testing/test_imports.py
 
 ENV PATH=/opt/testing:/home/jovyan/.local/bin:${PATH}
+ENV BOKEH_RESOURCES="inline"
 
 USER $NB_UID
