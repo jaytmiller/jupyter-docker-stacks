@@ -43,7 +43,8 @@ RUN apt-get install -y \
    apt-file \
    fftw3-dev \
    build-essential \
-   texlive-latex-recommended
+   texlive-latex-recommended \
+   cm-super
 
 RUN easy_install lxml
 
