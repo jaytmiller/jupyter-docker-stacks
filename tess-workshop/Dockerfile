@@ -129,13 +129,16 @@ RUN pip install --no-color  astrobase
 RUN pip install --no-color  reproject
 RUN pip install --no-color  ellc
 RUN pip install --no-color  awscli
+RUN pip install --no-color  papermill
 
 # ---------------------------------------------------------------
 # JupyterLab extensions
 
 RUN pip install ipyevents
 RUN jupyter nbextension enable --py --sys-prefix ipyevents
-RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager@^2.0.0 ipyevents
+RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager@^2.0.0 ipyevents --no-build
+RUN jupyter labextension install @bokeh/jupyter_bokeh --no-build
+RUN jupyter lab build
 
 # ---------------------------------------------------------------
 # conda cleanup
@@ -168,5 +171,7 @@ USER root
 
 COPY testing /opt/testing
 RUN python3 /opt/testing/test_imports.py
+
+ENV PATH=/opt/testing:/home/jovyan/.local/bin:${PATH}
 
 USER $NB_UID
